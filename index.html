@@ -761,6 +761,8 @@ const BADV=new Set();
 function ttsWake(){if(!HAS_TTS)return;try{if(speechSynthesis.paused)speechSynthesis.resume();}catch(e){}}
 function ttsHeard(){run.ttsMiss=0;const b=$("#sndFix");if(b&&!b.hidden)b.hidden=true;}
 function ttsMissed(){run.ttsMiss=(run.ttsMiss||0)+1;if(run.ttsMiss>=1){const b=$("#sndFix");if(b)b.hidden=false;}}
+/* a lone capital letter ("I," on its own) makes the iPhone voice say "capital I": send it lowercase so it's read as the word. Same length, so word highlighting stays in step. */
+function ttsText(t){return String(t).replace(/(^|[^A-Za-z'’])([IAO])(?=$|[^A-Za-z'’])/g,(m,p,c)=>p+c.toLowerCase());}
 function ttsSay(o){
   // o: {text, voice, rate, pitch, volume, tk, onstart(), onboundary(ev), done(ok)}; done runs once
   let closed=false,tries=0;const tk=o.tk,firstV=o.voice||null;
@@ -769,7 +771,7 @@ function ttsSay(o){
   const go=v=>{
     if(closed||tk!==run.token)return;
     tries++;let st=false,over=false;
-    const u=new SpeechSynthesisUtterance(o.text);
+    const u=new SpeechSynthesisUtterance(ttsText(o.text));
     if(v){u.voice=v;u.lang=v.lang;}
     if(o.rate)u.rate=o.rate;if(o.pitch)u.pitch=o.pitch;if(o.volume!=null)u.volume=o.volume;
     const failed=wasPlaying=>{ // ended, errored or timed out without ever starting
@@ -835,7 +837,7 @@ function speakParts(parts,sp,tk,done){
     let finished=false;
     const fin=()=>{if(finished)return;finished=true;if(tk!==run.token)return;later(next,140);};
     try{
-      const u=new SpeechSynthesisUtterance(p.t);
+      const u=new SpeechSynthesisUtterance(ttsText(p.t));
       const v=voiceFor(p.d?"__dir":sp);if(v){u.voice=v;u.lang=v.lang;}
       u.rate=S.settings.rate;let started=false;u.onstart=()=>{started=true;run.ttsMiss=0;};u.onend=fin;u.onerror=fin;
       run.utt=u;
@@ -2696,7 +2698,7 @@ async function runDiag(){
   else{const r=await new Promise(res=>{try{const x=new SR();x.lang="en-US";let done=false;const fin=s=>{if(done)return;done=true;try{x.onend=null;x.abort();}catch(e){}res(s);};x.onstart=()=>setTimeout(()=>fin("works"),800);x.onerror=e=>fin("error: "+e.error);x.onend=()=>fin("stopped right away");setTimeout(()=>fin("no answer"),5000);x.start();}catch(e){res("error: "+e.message);}});put("Word checking: "+r);}
   audioMode("playback");
   put("Browser: "+navigator.userAgent.replace(/^Mozilla\/5\.0 /,""));
-  put("Version: 2026-11-22b");
+  put("Version: 2026-11-23a");
 }
 $("#diagBtn").onclick=runDiag;
 $("#sndFix").onclick=sndFix;

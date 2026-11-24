@@ -1,7 +1,7 @@
 /* Text Runs offline helper. The page comes from the network first, so each update shows up the next time
    the app opens; when there's no signal, the saved copy opens instead. Everything else is served from the
    saved copy and refreshed in the background. */
-const V = "tr-2026-11-22b";
+const V = "tr-2026-11-23a";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-180.png", "icons/icon-192.png", "icons/icon-512.png"];
 const LATER = ["pdfjs/pdf.min.mjs", "pdfjs/pdf.worker.min.mjs"];
 const OUTSIDE = /(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)$/;
